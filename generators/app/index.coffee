@@ -77,6 +77,7 @@ module.exports = class extends Generator
     @fs.delete @destinationPath('package.json')
     @fs.write @destinationPath('package.json'), JSON.stringify pkg
 
+    # TODO copy boilerplate
     @fs.copy @templatePath('gulpfile.coffee'),
       @destinationPath('gulpfile.coffee')
 
