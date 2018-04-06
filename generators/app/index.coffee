@@ -1,33 +1,57 @@
+path = require 'path'
 Generator = require 'yeoman-generator'
+askName = require 'inquirer-npm-name'
+_ = require 'lodash'
+extend = require 'deep-extend'
+mkdirp = require 'mkdirp'
 chalk = require 'chalk'
 yosay = require 'yosay'
 
 module.exports = class extends Generator
+  constructor: (args, opts)->
+    super(args, opts)
+
+    @arguments 'name',
+      type: String
+      required: false
+
+    if @options.name?
+      @props = @options
+    else
+      @props = {}
+
   prompting: ->
-    # Have Yeoman greet the user.
-    @log yosay "Welcome to the scrumtrulescent
-      #{chalk.red('generator-coffee-node')} generator!"
+    if not @props.name?
+      askName {
+        name: 'name'
+        message: 'Your generator name'
+        default: path.basename(process.cwd())
+      }, this
+      .then (props) =>
+        @props.name = props.name
+  default: ->
+    if path.basename(@destinationPath()) isnt @props.name
+      @log "Your generator must be inside a folder named #{@props.name}\n\
+      I'll automatically create this folder."
+      mkdirp @props.name
+      @destinationRoot @destinationPath(@props.name)
+    readmeTpl = _.template @fs.read(@templatePath('README.md'))
 
-    prompts = [
-      {
-        type: 'confirm',
-        name: 'someAnswer',
-        message: 'Would you like to enable this option?',
-        default: true
-      }
-    ]
-
-    # To access props later use @props.someAnswer
-    @prompt(prompts).then (@props)=>
+    @composeWith require.resolve('generator-node/generators/app'), {
+      name: @props.name
+      projectRoot: 'generators'
+      skipInstall: @options.skipInstall
+      readme: readmeTpl @props
+    }
 
   writing: ->
-    @fs.copy @templatePath('dummyfile.txt'),
-      @destinationPath('dummyfile.txt')
+    pkg = @fs.readJSON @destinationPath('package.json'), {}
 
-    @fs.copy @templatePath('somefile.coffee'),
-      @destinationPath('somefile.coffee')
+    pkg.keywords = pkg.keywords ? []
+    pkg.keywords.push 'CoffeeScript'
+
+    @fs.writeJSON @destinationPath('package.json'), pkg
 
   install: ->
-    # right now there is nothing to install but if there were here you would do it.
-    # @installDependencies { bower: false }
-    return # be sure to put this after any intsallation to ensure it finishes.
+    @yarnInstall ['coffeescript', 'gulp'], dev: true
+    return
