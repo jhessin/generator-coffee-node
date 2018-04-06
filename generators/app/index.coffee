@@ -11,7 +11,7 @@ module.exports = class extends Generator
   constructor: (args, opts)->
     super(args, opts)
 
-    @arguments 'name',
+    @argument 'name',
       type: String
       required: false
 
@@ -19,6 +19,7 @@ module.exports = class extends Generator
       @props = @options
     else
       @props = {}
+    return
 
   prompting: ->
     if not @props.name?
@@ -39,19 +40,35 @@ module.exports = class extends Generator
 
     @composeWith require.resolve('generator-node/generators/app'), {
       name: @props.name
-      projectRoot: 'generators'
-      skipInstall: @options.skipInstall
+      boilerplate: false
+      projectRoot: 'lib'
+      skipInstall: true
       readme: readmeTpl @props
     }
 
   writing: ->
-    pkg = @fs.readJSON @destinationPath('package.json'), {}
+    @fs.extendJSON @destinationPath('package.json'), {
+      scripts:
+        pretest: 'coffeelint src && gulp'
+        install: 'gulp'
+      'lint-staged':
+        '*.coffee': [
+          'coffeelint',
+          'git add'
+        ]
+    }
 
-    pkg.keywords = pkg.keywords ? []
-    pkg.keywords.push 'CoffeeScript'
+    @fs.copy @templatePath('gulpfile.coffee'),
+      @destinationPath('gulpfile.coffee')
 
-    @fs.writeJSON @destinationPath('package.json'), pkg
+    @fs.copy @templatePath('src'),
+      @destinationPath('src')
 
   install: ->
-    @yarnInstall ['coffeescript', 'gulp'], dev: true
+    @yarnInstall [
+      'coffeescript', 'gulp'
+      'babel-core', 'babel-preset-env'
+      'gulp-coffee', 'gulp-cson'
+      'gulp-sourcemaps'
+    ], dev: true
     return
