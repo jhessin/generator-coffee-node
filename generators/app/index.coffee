@@ -42,7 +42,11 @@ module.exports = class extends Generator
       @destinationRoot @destinationPath(@props.name)
     readmeTpl = _.template @fs.read(@templatePath('README.md'))
 
-    @composeWith require.resolve('generator-license')
+    @composeWith require.resolve('generator-license'),
+      name: @props.authorName
+      email: @props.authorEmail
+      website: @props.authorUrl
+      defaultLicense: 'MIT'
 
   writing: ->
     pkg = @fs.readJSON @destinationPath('package.json'), {
@@ -78,6 +82,12 @@ module.exports = class extends Generator
     @fs.write @destinationPath('package.json'), JSON.stringify pkg
 
     # TODO copy boilerplate
+    @fs.copy @templatePath('.editorconfig'), @destinationPath('.editorconfig')
+    @fs.copy @templatePath('.gitattributes'), @destinationPath('.gitattributes')
+    @fs.copy @templatePath('.gitignore'), @destinationPath('.gitignore')
+    @fs.copy @templatePath('.travis.yml'), @destinationPath('.travis.yml')
+    @fs.copy @templatePath('coffeelint.json'),
+      @destinationPath('coffeelint.json')
     @fs.copy @templatePath('gulpfile.coffee'),
       @destinationPath('gulpfile.coffee')
 
@@ -86,6 +96,7 @@ module.exports = class extends Generator
 
   install: ->
     # TODO run git init
+    # TODO add npm fallback
     @yarnInstall [
       'coffeescript', 'gulp'
       'babel-core', 'babel-preset-env'
