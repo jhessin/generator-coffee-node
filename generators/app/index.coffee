@@ -4,6 +4,7 @@ askName = require 'inquirer-npm-name'
 _ = require 'lodash'
 extend = require 'deep-extend'
 mkdirp = require 'mkdirp'
+rimraf = require 'rimraf'
 chalk = require 'chalk'
 yosay = require 'yosay'
 
@@ -30,6 +31,9 @@ module.exports = class extends Generator
       }, this
       .then (props) =>
         @props.name = props.name
+
+    # TODO: Prompt for description, homepage, regository,
+    # authorName, authorEmail, authorUrl
   default: ->
     if path.basename(@destinationPath()) isnt @props.name
       @log "Your generator must be inside a folder named #{@props.name}\n\
@@ -38,25 +42,40 @@ module.exports = class extends Generator
       @destinationRoot @destinationPath(@props.name)
     readmeTpl = _.template @fs.read(@templatePath('README.md'))
 
-    @composeWith require.resolve('generator-node/generators/app'), {
-      name: @props.name
-      boilerplate: false
-      projectRoot: 'lib'
-      skipInstall: true
-      readme: readmeTpl @props
-    }
+    @composeWith require.resolve('generator-license')
 
   writing: ->
-    @fs.extendJSON @destinationPath('package.json'), {
+    pkg = @fs.readJSON @destinationPath('package.json'), {
+      name: @props.name
+      version: "0.0.0"
+      description: @props.description
+      homepage: @props.homepage
+      repository: @props.repository
+      author:
+        name: @props.authorName
+        email: @props.authorEmail
+        url: @props.authorUrl
+      main: 'lib/index.js'
       scripts:
-        pretest: 'coffeelint src && gulp'
-        install: 'gulp'
+        pretest: 'gulp'
+        postinstall: 'gulp'
+        prepublishOnly: 'nsp check'
+        precommit: 'lint-staged'
+        test: 'jest'
       'lint-staged':
         '*.coffee': [
           'coffeelint',
           'git add'
         ]
+      keywords: [
+        'node',
+        'CoffeeScript'
+      ]
     }
+
+    # remove the old and make room for the new
+    @fs.delete @destinationPath('package.json')
+    @fs.write @destinationPath('package.json'), JSON.stringify pkg
 
     @fs.copy @templatePath('gulpfile.coffee'),
       @destinationPath('gulpfile.coffee')
@@ -65,6 +84,7 @@ module.exports = class extends Generator
       @destinationPath('src')
 
   install: ->
+    # TODO run git init
     @yarnInstall [
       'coffeescript', 'gulp'
       'babel-core', 'babel-preset-env'

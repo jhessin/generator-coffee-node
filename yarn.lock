@@ -1554,7 +1554,7 @@ generator-jest@^1.5.1:
     lodash.upperfirst "^4.3.1"
     yeoman-generator "^2.0.0"
 
-generator-license@^5.2.0:
+generator-license@^5.2.0, generator-license@^5.4.0:
   version "5.4.0"
   resolved "https://registry.yarnpkg.com/generator-license/-/generator-license-5.4.0.tgz#9d662e98d2bd534036079461521036977becb7a0"
   dependencies:
