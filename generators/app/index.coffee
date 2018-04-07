@@ -199,6 +199,9 @@ module.exports = class extends Generator
   install: ->
     # TODO run git init
     @spawnCommand 'git', ['init']
+    .then ->
+      @spawnCommand 'git', ['add', '.']
+        .then -> @spawnCommand 'git', ['commit', '-m', 'baseline']
     # TODO add npm fallback
     pkgs = [
       'babel-core', 'babel-preset-env'
