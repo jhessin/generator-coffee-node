@@ -197,12 +197,6 @@ module.exports = class extends Generator
       @destinationPath('src')
 
   install: ->
-    # TODO run git init
-    @spawnCommand 'git', ['init']
-    .then ->
-      @spawnCommand 'git', ['add', '.']
-        .then -> @spawnCommand 'git', ['commit', '-m', 'baseline']
-    # TODO add npm fallback
     pkgs = [
       'babel-core', 'babel-preset-env'
       'coffeelint', 'coffeescript'
@@ -210,17 +204,22 @@ module.exports = class extends Generator
       'gulp-sourcemaps', 'jest', 'nsp', 'lint-staged'
     ]
 
-    finished = "All done. You can now run
-              #{chalk.green "cd #{@props.name}"} and
-              #{chalk.green 'yarn test'} or
-              #{chalk.green 'yarn start'}"
+    finished = =>
+      @spawnCommandSync 'git', ['init']
+      @spawnCommandSync 'git', ['add', '.']
+      @spawnCommandSync 'git', ['commit', '-m', 'baseline']
+      @log "All done. You can now run
+          #{chalk.green "cd #{@props.name}"} and
+          #{chalk.green 'yarn test'} or
+          #{chalk.green 'yarn start'}"
+
     @yarnInstall pkgs, dev: true
     .then (yarnError)=>
       if yarnError then @npmInstall(pkgs, dev: true).then (npmError)=>
         if npmError then @log 'Package Manager Required.
                               Please install yarn or npm'
         else
-          @log finished
+          finished()
       else
-        @log finished
+        finished()
     return
