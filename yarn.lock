@@ -3348,7 +3348,7 @@ normalize-url@2.0.1:
     query-string "^5.0.1"
     sort-keys "^2.0.0"
 
-npm-name@^3.0.0:
+npm-name@^3.0.0, npm-name@^3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/npm-name/-/npm-name-3.2.0.tgz#3cd1b88b87ebbbb0327854ef09b6dfa157c6183b"
   dependencies:

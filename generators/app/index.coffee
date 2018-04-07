@@ -1,6 +1,8 @@
 path = require 'path'
 Generator = require 'yeoman-generator'
 askName = require 'inquirer-npm-name'
+npmName = require 'npm-name'
+validate = require 'validate-npm-package-name'
 _ = require 'lodash'
 extend = require 'deep-extend'
 githubUsername = require 'github-username'
@@ -53,17 +55,39 @@ module.exports = class extends Generator
 
   prompting: ->
     namePromise =
-    if not @props.name?
-      askName {
-        name: 'name'
-        message: 'Your generator name'
-        default: path.basename(process.cwd())
-      }, this
-    else
-      namePromise = Promise.resolve @props
+      if not @props.name?
+        askName {
+          name: 'name'
+          message: 'Your generator name'
+          default: path.basename(process.cwd())
+        }, @
+      else
+        new Promise (resolve, reject) =>
+          { validForNewPackages, warnings, errors } = validate @props.name
+          if warnings? or errors?
+            askName {
+              name: 'name'
+              message: "#{errors?.join('\n') ? ''}\n
+                        #{warnings?.join('\n') ? ''}\n
+                        Please choose another name"
+            }, @
+            .then ({name})-> resolve {name}
+          else
+            npmName @props.name
+            .then (available)=>
+              if not available
+                askName {
+                  name: 'name'
+                  message: "#{@props.name} already exists on npm,
+                            please choose another?"
+                  default: @props.name
+                }, @
+                .then ({name})-> resolve {name}
+              else
+                resolve { name: @props.name}
 
-    namePromise.then (props) =>
-      @props.name = props.name
+    namePromise.then ({name}) =>
+      @props.name = name
 
       if @props.name? and path.basename(@destinationPath()) isnt @props.name
         @log "Your generator must be inside a folder named #{@props.name}\n\
@@ -180,6 +204,7 @@ module.exports = class extends Generator
 
   install: ->
     # TODO run git init
+    @spawnCommand 'git', ['init']
     # TODO add npm fallback
     pkgs = [
       'babel-core', 'babel-preset-env'
@@ -187,5 +212,18 @@ module.exports = class extends Generator
       'gulp', 'gulp-coffee', 'gulp-cson'
       'gulp-sourcemaps', 'jest', 'nsp', 'lint-staged'
     ]
+
+    finished = "All done. You can now run
+              #{chalk.green "cd #{@props.name}"} and
+              #{chalk.green 'yarn test'} or
+              #{chalk.green 'yarn start'}"
     @yarnInstall pkgs, dev: true
+    .then (yarnError)=>
+      if yarnError then @npmInstall(pkgs, dev: true).then (npmError)=>
+        if npmError then @log 'Package Manager Required.
+                              Please install yarn or npm'
+        else
+          @log finished
+      else
+        @log finished
     return
