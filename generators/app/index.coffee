@@ -3,6 +3,7 @@ Generator = require 'yeoman-generator'
 askName = require 'inquirer-npm-name'
 _ = require 'lodash'
 extend = require 'deep-extend'
+githubUsername = require 'github-username'
 mkdirp = require 'mkdirp'
 rimraf = require 'rimraf'
 chalk = require 'chalk'
@@ -15,31 +16,107 @@ module.exports = class extends Generator
     @argument 'name',
       type: String
       required: false
+      desc: 'Name of your project'
 
-    if @options.name?
-      @props = @options
-    else
-      @props = {}
+    @option 'description',
+      type: String
+      required: false
+      desc: 'A description of your project'
+
+    @option 'homepage',
+      type: String
+      required: false
+      desc: 'The homepage of your app'
+
+    @option 'authorName',
+      type: String
+      required: false
+      desc: 'The name of the Author'
+
+    @option 'authorEmail',
+      type: String
+      required: false
+      desc: 'The email of the Author'
+
+    @option 'authorUrl',
+      type: String
+      required: false
+      desc: 'Author homepage'
+
+    @option 'repository',
+      type: String
+      required: false
+      desc: 'Name of the GitHub repository'
+
+    @props = @options ? {}
     return
 
   prompting: ->
+    namePromise =
     if not @props.name?
       askName {
         name: 'name'
         message: 'Your generator name'
         default: path.basename(process.cwd())
       }, this
-      .then (props) =>
-        @props.name = props.name
+    else
+      namePromise = Promise.resolve @props
 
-    # TODO: Prompt for description, homepage, regository,
-    # authorName, authorEmail, authorUrl
+    namePromise.then (props) =>
+      @props.name = props.name
+
+      if @props.name? and path.basename(@destinationPath()) isnt @props.name
+        @log "Your generator must be inside a folder named #{@props.name}\n\
+              I'll automatically create this folder."
+        mkdirp @props.name
+        @destinationRoot @destinationPath(@props.name)
+      @user.github.username().then (username)=>
+        @props.username = username
+
+        @prompt [{
+          name: 'description'
+          when: not @props.description
+          message: 'Description'
+          default: 'An awesome node module that does cool stuff'
+        }, {
+          name: 'homepage'
+          message: 'Project homepage url'
+          when: not @props.homepage
+          default: "https://github.com/#{@props.username}/#{@props.name}"
+        }, {
+          name: 'authorName'
+          message: "Author's Name"
+          when: not @props.authorName
+          default: @user.git.name()
+          store: true
+        }, {
+          name: 'authorEmail'
+          message: "Author's Email"
+          when: not @props.authorEmail
+          default: @user.git.email()
+          store: true
+        }, {
+          name: 'authorUrl'
+          message: "Author's Homepage"
+          when: not @props.authorUrl
+          default: 'http://www.example.com'
+          store: true
+        }, {
+          name: 'keywords'
+          message: 'Package keywords (comma to split)'
+          default: 'node,CoffeeScript'
+          filter: (words)->
+            words.split /\s*,\s*/g
+        }, {
+          name: 'repository'
+          message: 'Project repository'
+          when: not @props.repository
+          default: "#{@props.username}/#{@props.name}"
+        }]
+        .then (props)=>
+          @props = { @props..., props... }
+
   default: ->
-    if path.basename(@destinationPath()) isnt @props.name
-      @log "Your generator must be inside a folder named #{@props.name}\n\
-      I'll automatically create this folder."
-      mkdirp @props.name
-      @destinationRoot @destinationPath(@props.name)
     readmeTpl = _.template @fs.read(@templatePath('README.md'))
 
     @composeWith require.resolve('generator-license'),
@@ -60,7 +137,11 @@ module.exports = class extends Generator
         email: @props.authorEmail
         url: @props.authorUrl
       main: 'lib/index.js'
+      engines:
+        npm: '>= 4.0.0'
       scripts:
+        start: 'gulp && node .'
+        watch: 'gulp watch'
         pretest: 'gulp'
         postinstall: 'gulp'
         prepublishOnly: 'nsp check'
@@ -71,15 +152,15 @@ module.exports = class extends Generator
           'coffeelint',
           'git add'
         ]
-      keywords: [
-        'node',
-        'CoffeeScript'
-      ]
+      jest:
+        testEnvironment: 'node'
+      devDependencies: {}
+      keywords: @props.keywords
     }
 
     # remove the old and make room for the new
     @fs.delete @destinationPath('package.json')
-    @fs.write @destinationPath('package.json'), JSON.stringify pkg
+    @fs.writeJSON @destinationPath('package.json'), pkg
 
     # TODO copy boilerplate
     @fs.copy @templatePath('.editorconfig'), @destinationPath('.editorconfig')
@@ -91,16 +172,20 @@ module.exports = class extends Generator
     @fs.copy @templatePath('gulpfile.coffee'),
       @destinationPath('gulpfile.coffee')
 
+    @fs.copyTpl @templatePath('README.md'),
+      @destinationPath('README.md'), @props
+
     @fs.copy @templatePath('src'),
       @destinationPath('src')
 
   install: ->
     # TODO run git init
     # TODO add npm fallback
-    @yarnInstall [
-      'coffeescript', 'gulp'
+    pkgs = [
       'babel-core', 'babel-preset-env'
-      'gulp-coffee', 'gulp-cson'
-      'gulp-sourcemaps'
-    ], dev: true
+      'coffeelint', 'coffeescript'
+      'gulp', 'gulp-coffee', 'gulp-cson'
+      'gulp-sourcemaps', 'jest', 'nsp', 'lint-staged'
+    ]
+    @yarnInstall pkgs, dev: true
     return

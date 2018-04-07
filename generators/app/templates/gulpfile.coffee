@@ -19,4 +19,9 @@ gulp.task 'coffee', ->
     .pipe sourcemaps.write()
     .pipe gulp.dest './lib'
 
+gulp.task 'watch', ['coffee', 'cson'], ->
+  gulp.watch [
+    './src/**/*.coffee', './src/**/*.*.coffee'
+    './src/**/*.cson'], [ 'coffee', 'cson' ]
+
 gulp.task 'default', [ 'cson', 'coffee' ]
