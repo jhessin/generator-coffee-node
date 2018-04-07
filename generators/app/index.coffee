@@ -3,13 +3,9 @@ Generator = require 'yeoman-generator'
 askName = require 'inquirer-npm-name'
 npmName = require 'npm-name'
 validate = require 'validate-npm-package-name'
-_ = require 'lodash'
-extend = require 'deep-extend'
 githubUsername = require 'github-username'
 mkdirp = require 'mkdirp'
-rimraf = require 'rimraf'
 chalk = require 'chalk'
-yosay = require 'yosay'
 
 module.exports = class extends Generator
   constructor: (args, opts)->
@@ -141,8 +137,6 @@ module.exports = class extends Generator
           @props = { @props..., props... }
 
   default: ->
-    readmeTpl = _.template @fs.read(@templatePath('README.md'))
-
     @composeWith require.resolve('generator-license'),
       name: @props.authorName
       email: @props.authorEmail
@@ -209,7 +203,7 @@ module.exports = class extends Generator
     pkgs = [
       'babel-core', 'babel-preset-env'
       'coffeelint', 'coffeescript'
-      'gulp', 'gulp-coffee', 'gulp-cson'
+      'gulp@next', 'gulp-coffee', 'gulp-cson'
       'gulp-sourcemaps', 'jest', 'nsp', 'lint-staged'
     ]
 
