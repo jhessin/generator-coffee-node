@@ -1,7 +1,7 @@
-gulp = require 'gulp'
-coffee = require 'gulp-coffee'
-cson = require 'gulp-cson'
-sourcemaps = require 'gulp-sourcemaps'
+import gulp from 'gulp'
+import coffee from 'gulp-coffee'
+import cson from 'gulp-cson'
+import sourcemaps from 'gulp-sourcemaps'
 
 paths =
   src:
@@ -9,12 +9,12 @@ paths =
     cson: './src/**/*.cson'
   dest: './lib'
 
-exports.cson = compileCson = ->
+compileCson = ->
   gulp.src paths.src.cson, since: gulp.lastRun(compileCson)
   .pipe cson()
   .pipe gulp.dest paths.dest
 
-exports.coffee = compileCoffee = ->
+compileCoffee = ->
   gulp.src paths.src.coffee,
     since: gulp.lastRun(compileCoffee)
   .pipe sourcemaps.init()
@@ -26,7 +26,12 @@ exports.coffee = compileCoffee = ->
   .pipe sourcemaps.write()
   .pipe gulp.dest paths.dest
 
-exports.watch = watch = ->
+export {
+  compileCoffee as coffee
+  compileCson as cson
+}
+
+export watch = ->
   gulp.watch paths.src.coffee,
     ignoreInitial: false
     compileCoffee
@@ -34,4 +39,4 @@ exports.watch = watch = ->
     ignoreInitial: false
     compileCson
 
-exports.default = gulp.series compileCson, compileCoffee
+export default gulp.series compileCson, compileCoffee

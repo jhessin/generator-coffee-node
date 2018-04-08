@@ -189,6 +189,8 @@ module.exports = class extends Generator
       @destinationPath('coffeelint.json')
     @fs.copy @templatePath('gulpfile.coffee'),
       @destinationPath('gulpfile.coffee')
+    @fs.copy @templatePath('gulpfile.js'),
+      @destinationPath('gulpfile.js')
 
     @fs.copyTpl @templatePath('README.md'),
       @destinationPath('README.md'), @props
