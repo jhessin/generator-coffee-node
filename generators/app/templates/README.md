@@ -1,5 +1,3 @@
-# <%=name%> [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][daviddm-image]][daviddm-url] [![Coverage percentage][coveralls-image]][coveralls-url]
-
 This is a node application generated using [generator-coffee-node](https://github.com/jhessin/generator-coffee-node).
 
 ## Usage
