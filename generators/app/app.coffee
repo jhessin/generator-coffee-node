@@ -28,7 +28,7 @@ module.exports = class extends Generator
     .then (props) =>
       @props.name = props.name
 
-  writing: ->
+  default: ->
     if path.basename(@destinationPath()) isnt @props.name
       @log "Your generator must be inside a folder named #{@props.name}\n\
       I'll automatically create this folder."
@@ -36,41 +36,17 @@ module.exports = class extends Generator
       @destinationRoot @destinationPath(@props.name)
     readmeTpl = _.template @fs.read(@templatePath('README.md'))
 
-    @composeWith require.resolve('generator-node/generators/app'), {
+    @log chalk.yellow('composing with generator-node')
+    @composeWith require.resolve('generator-node/generators/app'),
       name: @props.name
       boilerplate: false
       projectRoot: 'lib'
       skipInstall: true
       readme: readmeTpl @props
-    }
+    @log chalk.green('done with generator-node')
 
-    @fs.extendJSON @destinationPath('package.json'), {
-      scripts:
-        start: 'gulp && node .'
-        watch: 'gulp watch'
-        pretest: 'coffeelint src && gulp'
-        prepublishOnly:
-          'nsp check && gulp'
-      'lint-staged':
-        '*.coffee': [
-          'coffeelint',
-          'git add'
-        ]
-    }
-
-    @fs.copy @templatePath('gulpfile.coffee'),
-      @destinationPath('gulpfile.coffee')
-    @fs.copy @templatePath('gulpfile.js'),
-      @destinationPath('gulpfile.js')
-    @fs.copy @templatePath('.gitignore'),
-      @destinationPath('.gitignore')
-    @fs.copy @templatePath('.npmignore'),
-      @destinationPath('.npmignore')
-    @fs.copy @templatePath('coffeelint.json'),
-      @destinationPath('coffeelint.json')
-
-    @fs.copy @templatePath('src'),
-      @destinationPath('src')
+  writing: ->
+    @composeWith require.resolve('../subgenerator', {})
 
   install: ->
     @yarnInstall [
