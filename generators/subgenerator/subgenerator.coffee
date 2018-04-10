@@ -40,10 +40,23 @@ module.exports = class extends Generator
     @log chalk.green('DONE!')
 
   install: ->
-    @yarnInstall [
+    pkgs = [
       'coffeescript', 'gulp@next', 'coffee-babel'
       'babel-core', 'babel-preset-env'
       'gulp-coffee', 'gulp-cson'
       'gulp-sourcemaps', 'mocha', 'fs-cson'
-    ], dev: true
+    ]
+    @yarnInstall pkgs,
+      dev: true
+    .then (yarnError)=>
+      if yarnError
+        @npmInstall pkgs, dev: true
+        .then (npmError)->
+          if npmError
+            throw new Error 'Yarn or NPM required'
     return
+
+  end: ->
+    @spawnCommandSync 'git', [ 'init' ]
+    @spawnCommandSync 'git', [ 'add', '.' ]
+    @spawnCommandSync 'git', [ 'commit', '-m', 'Baseline']
