@@ -33,12 +33,14 @@
     "chalk": "^2.1.0",
     "coffeescript": "^2.2.4",
     "generator-license": "^5.4.0",
+    "generator-node": "^2.4.0",
     "github-username": "^4.1.0",
     "inquirer-npm-name": "^3.0.0",
+    "lodash": "^4.17.5",
     "mkdirp": "^0.5.1",
     "npm-name": "^3.2.0",
     "validate-npm-package-name": "^3.0.0",
-    "yeoman-generator": "^2.0.1"
+    "yeoman-generator": "^2.0.3"
   },
   "jest": {
     "testEnvironment": "node"
