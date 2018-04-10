@@ -47,12 +47,3 @@ module.exports = class extends Generator
 
   writing: ->
     @composeWith require.resolve('../subgenerator', {})
-
-  install: ->
-    @yarnInstall [
-      'coffeescript', 'gulp@next', 'coffee-babel'
-      'babel-core', 'babel-preset-env'
-      'gulp-coffee', 'gulp-cson'
-      'gulp-sourcemaps'
-    ], dev: true
-    return

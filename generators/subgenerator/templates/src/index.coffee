@@ -1,4 +1,5 @@
-data = require './data'
+require 'fs-cson/register'
+data = require './data.cson'
 
 console.log JSON.stringify data
 

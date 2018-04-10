@@ -1,0 +1,4 @@
+{
+  "mocha.files.glob": "**/*.test.coffee",
+  "mocha.requires": ["coffee-babel"]
+}

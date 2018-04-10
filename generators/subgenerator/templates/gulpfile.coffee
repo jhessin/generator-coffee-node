@@ -1,17 +1,16 @@
 import gulp from 'gulp'
 import coffee from 'gulp-coffee'
-import cson from 'gulp-cson'
 import sourcemaps from 'gulp-sourcemaps'
+import del from 'del'
 
 paths =
   src:
-    coffee: './src/**/{*.,*.*.}coffee'
+    coffee: './src/**/*.coffee'
     cson: './src/**/*.cson'
   dest: './lib'
 
-compileCson = ->
-  gulp.src paths.src.cson, since: gulp.lastRun(compileCson)
-  .pipe cson()
+copyCson = ->
+  gulp.src paths.src.cson, since: gulp.lastRun(copyCson)
   .pipe gulp.dest paths.dest
 
 compileCoffee = ->
@@ -28,8 +27,13 @@ compileCoffee = ->
 
 export {
   compileCoffee as coffee
-  compileCson as cson
+  copyCson as cson
 }
+
+export clean = ->
+  del [
+    'lib'
+  ]
 
 export watch = ->
   gulp.watch paths.src.coffee,
@@ -37,6 +41,6 @@ export watch = ->
     compileCoffee
   gulp.watch paths.src.cson,
     ignoreInitial: false
-    compileCson
+    copyCson
 
-export default gulp.series compileCson, compileCoffee
+export default gulp.series copyCson, compileCoffee
