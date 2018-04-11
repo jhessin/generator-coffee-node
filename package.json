@@ -1,6 +1,6 @@
 {
   "name": "generator-coffee-node",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description":
     "A yeoman generator for node applications using CoffeeScript and Gulp",
   "homepage": "",
