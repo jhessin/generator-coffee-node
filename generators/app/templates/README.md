@@ -2,6 +2,8 @@ This is a node application generated using [generator-coffee-node](https://githu
 
 ## Usage
 
-By default this project will compile any coffeescript you put in the `src/` directory and place it in a `lib/` directory (customizable in gulpfile.coffee).
+By default this project will compile any coffeescript you put in the `src/` directory and place it in a `lib/` directory (customizable in gulpfile.coffee). Any other files are copied directly from 'src/' to 'lib/' so they can be referenced properly.
 
-The entry point of the program will be `src/index.coffee` by default. This can be customized by modifying your `package.json`'s `main` entry from `lib/index.js`, but it is simpler to just `import` or `require` what you need in the index.coffee file.
+The only files pushed to npm would be 'lib/' directory along with package.json.
+
+Testing is done with mocha and by default any file ending in .test.coffee will be considered a test file.
