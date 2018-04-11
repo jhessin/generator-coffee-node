@@ -4,23 +4,24 @@ import coffee from 'gulp-coffee'
 import sourcemaps from 'gulp-sourcemaps'
 import del from 'del'
 
+coffeeOptions =
+  bare: true
+  header: false
+  transpile:
+    presets: ['env']
+
 paths =
   src: './src/**/*.*'
+  filter: filter ['**/*.coffee'], restore: true
   dest: './lib'
 
 export compile = ->
-  f = filter ['*.coffee'], restore: true
-  gulp.src paths.src,
-    since: gulp.lastRun(compile)
-  .pipe f
+  gulp.src paths.src
+  .pipe paths.filter
   .pipe sourcemaps.init()
-  .pipe coffee
-    bare: true
-    header: false
-    transpile:
-      presets: ['env']
+  .pipe coffee coffeeOptions
   .pipe sourcemaps.write()
-  .pipe f.restore
+  .pipe paths.filter.restore
   .pipe gulp.dest paths.dest
 
 export clean = ->
