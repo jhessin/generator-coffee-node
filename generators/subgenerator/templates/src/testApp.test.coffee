@@ -1,5 +1,5 @@
-assert = require 'assert'
-testApp = require './index.coffee'
+import assert from 'assert'
+import testApp from './'
 
 describe 'testApp', ->
   it 'Cson imported', ->
