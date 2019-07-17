@@ -1,6 +1,8 @@
 # generator-coffee-node [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][daviddm-image]][daviddm-url] [![Coverage percentage][coveralls-image]][coveralls-url]
 > A generator for node applications using CoffeeScript and Gulp
 
+# NOTICE: No longer maintained. Feel free to use/create a fork if you are interested.
+
 ## Installation
 
 First, install [Yeoman](http://yeoman.io) and generator-coffee-node using [npm](https://www.npmjs.com/) (we assume you have pre-installed [node.js](https://nodejs.org/)).
